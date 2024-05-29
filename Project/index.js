@@ -2,12 +2,48 @@
 const canvas = document.getElementById('Mycanvas')
 const ctx = canvas.getContext('2d')
 //ctx = Context
-
 canvas.width  = 1024
 canvas.height = 576
 
-ctx.fillStyle = 'white'
-ctx.fillRect(0,0,canvas.width, canvas.height)
+const collisionsMap = []
+for (var i = 0; i < collisions.length; i += 70) {
+  collisionsMap.push(collisions.slice(i, 70 + i))
+}
+
+const boundaries = []
+const offset = {
+  x: -930,
+  y: -340
+}
+
+class Boundary {
+  static width = 60
+  static height = 60
+  constructor({position}) {
+    this.position = position
+    this.width = 60
+    this.height = 60
+  }
+  draw() {
+    ctx.fillStyle = "red";
+    ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
+  }
+}
+
+
+collisionsMap.forEach((row, i) => {
+  row.forEach((symbol, j) => {
+    if(symbol === 1025)
+      boundaries.push(
+        new Boundary({
+          position: {
+            x: j * Boundary.width + offset.x,
+            y: i * Boundary.height + offset.y
+          }
+        })
+      )
+  })
+})
 
 const image = new Image()
 image.src = './img/SunnyTown.png'
@@ -28,8 +64,8 @@ class Sprite {
 
 const background = new Sprite({
   position: {
-    x: -1050,
-    y: -775
+    x: offset.x,
+    y: offset.y
   },
   image: image
 })
@@ -58,7 +94,10 @@ const keys = {
 function animateCharacter(){
   window.requestAnimationFrame(animateCharacter)
 
-  background.draw();
+  background.draw()
+  boundaries.forEach(boundary => {
+    boundary.draw()
+  })
 
   ctx.drawImage(
     playerImage,
@@ -71,25 +110,31 @@ function animateCharacter(){
     playerImage.width / 4,
     playerImage.height,
   )
-  if (keys.w.pressed) background.position.y = background.position.y + 3
-  else if (keys.a.pressed) background.position.x = background.position.x - 3
-  else if (keys.d.pressed) background.position.x = background.prosition.x + 3
-  else if (keys.s.pressed) background.position.y = background.position.y - 3
+  if (keys.w.pressed && lastkey === 'w') background.position.y += 3
+  else if (keys.a.pressed && lastkey === 'a') background.position.x += 3
+  else if (keys.d.pressed && lastkey === 'd') background.position.x -= 3
+  else if (keys.s.pressed && lastkey === 's') background.position.y -= 3
 }
+
+let lastkey = ''
 
 window.addEventListener('keydown', (e) => {
     switch (e.key) {
       case 'w':
         keys.w.pressed = true;
+        lastkey = 'w'
         break;
       case 'a':
         keys.a.pressed = true;
+        lastkey = 'a'
         break;
       case 's':
         keys.s.pressed = true;
+        lastkey = 's'
         break;
       case 'd':
         keys.d.pressed = true;
+        lastkey = 'd'
         break;
     }
     console.log(keys)
